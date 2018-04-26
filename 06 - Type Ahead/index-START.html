@@ -17,6 +17,56 @@
 <script>
 const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
 
+let cities = [];
+fetch(endpoint)
+  .then(res => res.json())
+  .then(data => cities.push(...data));
+
+function matchWord(word, cities) {
+  const regWord = new RegExp(word, 'gi');
+  const matches = cities.filter(place => {
+    return place.city.match(regWord) || place.state.match(regWord);
+  })
+  return matches;
+}
+
+function commaNum(population) {
+  let counter = 0
+  population = population.toString()
+  let result = ''
+  for(let i = population.length-1; i >= 0; i--) {
+    if(counter % 3 === 0 && counter !== 0) {
+      result = ','.concat(result)
+    }
+    result = population[i].concat(result);
+    counter++;
+  }
+
+  return result;
+}
+
+function render() {
+  const matches = matchWord(this.value, cities);
+  const html = matches.map(location => {
+
+    const regWord = new RegExp(this.value, 'gi');
+    const cityName = location.city.replace(regWord, `<span class="hl">${this.value}</span>`);
+    const stateName =  location.state.replace(regWord, `<span class="h1">${this.value}</span>`);
+
+    return `
+    <li>
+      <span class="name">${cityName}, ${stateName}</span>
+      <span class="population">${commaNum(location.population)}</span>
+    </li>
+    `
+  }).join('')
+  suggestions.innerHTML = html;
+}
+
+const suggestions = document.querySelector('.suggestions')
+
+document.querySelector('.search').addEventListener('change', render);
+document.querySelector('.search').addEventListener('keyup', render);
 </script>
   </body>
 </html>
